@@ -1,0 +1,29 @@
+{
+  "name": "ffub",
+  "version": "0.0.10",
+  "description": "Fitness for Use Backbone (FFUB) for biodiversity data",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BioComp-USP/ffub.git"
+  },
+  "keywords": [
+    "data",
+    "quality",
+    "biodiversity",
+    "biodiversity",
+    "informatics",
+    "fitness",
+    "for",
+    "use"
+  ],
+  "author": "Allan Koch Veiga",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/BioComp-USP/ffub/issues"
+  },
+  "homepage": "https://github.com/BioComp-USP/ffub#readme"
+}
