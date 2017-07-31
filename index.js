@@ -1,6 +1,5 @@
 var hash_ = require('object-hash');
 var uuidv4 = require('uuid/v4');
-
 var FFUB = function(){
     this.db = {};    
     // DQ Needs Class
@@ -142,8 +141,6 @@ FFUB.prototype.retrieveMeasuresByDataResourceId = function(dataResourceId,dimens
     Object.keys(self.db.assertion.measure).forEach(function(assertionId){
         if(self.db.assertion.measure[assertionId].dataResourceId==dataResourceId){
             if(dimensionId && dimensionId == self.db.assertion.measure[assertionId].dimensionId)
-                rs.push(self.db.assertion.measure[assertionId]);
-            else
                 rs.push(self.db.assertion.measure[assertionId]);            
         }
     });
@@ -155,8 +152,6 @@ FFUB.prototype.retrieveValidationByDataResourceId = function(dataResourceId,crit
     Object.keys(self.db.assertion.validation).forEach(function(assertionId){
         if(self.db.assertion.validation[assertionId].dataResourceId==dataResourceId){
             if(criterionId && criterionId == self.db.assertion.validation[assertionId].criterionId)
-                rs.push(self.db.assertion.validation[assertionId]);
-            else
                 rs.push(self.db.assertion.validation[assertionId]);            
         }
     });
@@ -165,11 +160,9 @@ FFUB.prototype.retrieveValidationByDataResourceId = function(dataResourceId,crit
 FFUB.prototype.retrieveAmendmentByDataResourceId = function(dataResourceId,enahncementId=null){    
     var self = this;
     var rs = [];
-    Object.keys(self.db.assertion.amendment).forEach(function(assertionId){
-        if(self.db.assertion.amendment[assertionId].dataResourceId==dataResourceId){
-            if(enahncementId && enahncementId == self.db.assertion.amendment[assertionId].enahncementId)
-                rs.push(self.db.assertion.amendment[assertionId]);
-            else
+    Object.keys(self.db.assertion.amendment).forEach(function(assertionId){        
+        if(self.db.assertion.amendment[assertionId].dataResourceId==dataResourceId){            
+            if(enahncementId && enahncementId == self.db.assertion.amendment[assertionId].enhancementId)
                 rs.push(self.db.assertion.amendment[assertionId]);            
         }
     });
@@ -211,7 +204,7 @@ FFUB.prototype.printDQAmendment = function(id){
 }
 FFUB.prototype.printDQReport = function(dataResourceId, profileId){
     var self = this;
-    var profile = self.db.profile[profileId];
+    var profile = self.db.profile[profileId];    
     var resourceType = self.db.dataResource.single[dataResourceId]?"single":self.db.dataResource.multi[dataResourceId]?"multi":null;    
     var dataResource = self.db.dataResource[resourceType][dataResourceId];  
     // Head
@@ -232,9 +225,9 @@ FFUB.prototype.printDQReport = function(dataResourceId, profileId){
         });
 
     // DQ Measures
-    var auxPrint = true;    
-    profile.measurementPolicy.forEach(function(dimensionId){
-        if(self.db.dimension[dimensionId].resourceType==resourceType){
+    var auxPrint = true;        
+    profile.measurementPolicy.forEach(function(dimensionId){        
+        if(self.db.dimension[dimensionId].resourceType==resourceType){            
             var assertion = self.retrieveMeasuresByDataResourceId(dataResourceId,dimensionId)[0];
             if(assertion && assertion.id){
                 if(auxPrint)
@@ -263,7 +256,7 @@ FFUB.prototype.printDQReport = function(dataResourceId, profileId){
     auxPrint = true;   
     profile.amendmentPolicy.forEach(function(enhancementId){
         if(self.db.enhancement[enhancementId].resourceType==resourceType){
-            var assertion = self.retrieveAmendmentByDataResourceId(dataResourceId,enhancementId)[0];
+            var assertion = self.retrieveAmendmentByDataResourceId(dataResourceId,enhancementId)[0];            
             if(assertion && assertion.id){
                 if(auxPrint)
                     console.log("\n \x1b[4mDQ Amendment\x1b[0m:");

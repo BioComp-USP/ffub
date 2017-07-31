@@ -25,5 +25,12 @@
   "bugs": {
     "url": "https://github.com/BioComp-USP/ffub/issues"
   },
-  "homepage": "https://github.com/BioComp-USP/ffub#readme"
+  "homepage": "https://github.com/BioComp-USP/ffub#readme",
+  "dependencies": {
+    "@google/maps": "^0.4.3",
+    "async": "^2.5.0",
+    "csv-reader": "^1.0.1",
+    "object-hash": "^1.1.8",
+    "request": "^2.81.0"
+  }
 }

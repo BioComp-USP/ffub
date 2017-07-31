@@ -10,6 +10,6 @@ A Node.js module of a Fitness for Use Backbone (FFUB) for biodiversity data.
 ## Run a test
 
 ``` bash
-  $ cd node_modules/ffub
-  $ node test.js
+  $ node_modules/ffub
+  $ npm run test
 ```
