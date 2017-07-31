@@ -1,12 +1,14 @@
 var fs = require('fs');
 var CsvReader = require('csv-reader');
 var hash = require('object-hash');
-
+var request = require('request');
+var key = process.env.GMAPS_KEY;
+var googleMapsClient = require('@google/maps').createClient({key: key});
 var Toolkit = function(ffub){
     this.ffub = ffub;
 }
 // Read dataset from a DwC file
-Toolkit.prototype.readDatasetFromDwCFile = function(path, limit=Infinity, delimiter="\t", callbackRecord, callbackDataset){
+Toolkit.prototype.readDatasetFromDwCFile = function(path, limit=Infinity, delimiter="\t", callbackRecord){
     var self = this;
     var header = [];    
     var inputStream = fs.createReadStream(path, 'utf8');  
@@ -26,28 +28,63 @@ Toolkit.prototype.readDatasetFromDwCFile = function(path, limit=Infinity, delimi
                 } 
             }                
         })
-        .on('end', function (data_) {             
-            if(callbackDataset) callbackDataset(data);                         
+        .on('end', function (data_) {
+            // if(callbackDataset) callbackDataset(data);                         
         });
 }
-
-Toolkit.prototype.measureCoordinatesCompletenessSingle = function(record){    
-    if(
-        typeof record.decimalLatitude != "undefinded" &&
-        typeof record.decimalLongitude != "undefinded" &&
-        record.decimalLatitude != null &&
-        record.decimalLongitude != null &&
-        String(record.decimalLatitude).length>0 &&
-        String(record.decimalLongitude).length>0
-        )
-        return "complete";
-    return "not complete";
+Toolkit.prototype.measureCoordinatesCompletenessRecord = function(record) {
+    var rs = "not complete";
+    if(record.decimalLatitude && String(record.decimalLatitude).trim().length>0 
+            && record.decimalLongitude && String(record.decimalLongitude).trim().length>0 
+            && !(Number(record.decimalLongitude) == 0 && Number(record.decimalLongitude)==0))
+        rs = "complete";
+    return rs;
 }
-Toolkit.prototype.validateCoordinatesCompletenessSingleFromMeasureId = function(measureId){    
-    return (this.ffub.db.assertion.measure[measureId].result=="complete");
+Toolkit.prototype.coordinatesConsistencyGMaps = function(record, cb){    
+    if(record.decimalLatitude && record.decimalLongitude && (record.country || record.countryCode)){
+        googleMapsClient.geocode({
+        address: `${record.decimalLatitude}, ${record.decimalLongitude}`
+        }, function(err, response) {            
+            if (!err) {
+                if(response.json.results[0]){
+                    var consistent = false;
+                    response.json.results[0].address_components.forEach(function(item){
+                        if(item.types.indexOf("country")>=0){
+                            if((record.country && item.long_name.trim().toUpperCase() == record.country.trim().toUpperCase()) 
+                                || (record.countryCode && item.short_name.trim().toUpperCase() == record.countryCode.trim().toUpperCase())){
+                                consistent = true;
+                                return false;
+                            }                            
+                        }
+                    })
+                    cb(consistent?"consistent":"not consistent")
+                } else {
+                    cb("unknown");
+                }                                    
+            } else {                
+                cb("unknown");
+            }
+        });
+    }  else cb("unknown")  
 }
-Toolkit.prototype.recommendCoordinatesSingleFromVerbatimLocality = function(record){    
-    return String(record.locality).length>0 && String(record.locality).trim().toUpperCase()!="NÃO INFORMADO" ?{decimalLatitude:-30, decimalLongitude:-63}:null;    
+Toolkit.prototype.recommendCoordinatesSingleFromMunicipality = function(record,cb){    
+    var q = record.municipality || record.locality;
+    googleMapsClient.geocode({
+    address: q
+    }, function(err, response) {            
+        if (!err) {
+            if(response.json.results[0]){                
+                if(response.json.results[0].geometry && response.json.results[0].geometry.location && response.json.results[0].geometry.location.lat && response.json.results[0].geometry.location.lng)
+                    cb({decimalLatitude: response.json.results[0].geometry.location.lat, decimalLongitude: response.json.results[0].geometry.location.lng});
+                else 
+                    cb("unknown");
+            } else {
+                cb("unknown");
+            }                                    
+        } else {                
+            cb("unknown");
+        }
+    });    
 }
 
 Toolkit.prototype.measureCoordinatesCompletenessDataset = function(dataset,dimensionId){  
@@ -59,6 +96,20 @@ Toolkit.prototype.measureCoordinatesCompletenessDataset = function(dataset,dimen
     dataset.forEach(function(rec){
         self.ffub.retrieveMeasuresByDataResourceId(rec.id,dimensionId).forEach(function(measure){
             if(measure.result=="complete")
+                result = result + (1/total);
+        });
+    });    
+    return result;
+}
+Toolkit.prototype.measureCoordinatesConsistencyDataset = function(dataset,dimensionId){  
+    var self = this;
+    var total = dataset.length;
+    if(!total) 
+        return 0;
+    var result = 0;
+    dataset.forEach(function(rec){
+        self.ffub.retrieveMeasuresByDataResourceId(rec.id,dimensionId).forEach(function(measure){
+            if(measure.result=="consistent")
                 result = result + (1/total);
         });
     });    
