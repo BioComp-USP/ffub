@@ -3,6 +3,8 @@ var CsvReader = require('csv-reader');
 var hash = require('object-hash');
 var request = require('request');
 var key = process.env.GMAPS_KEY;
+if(!key)
+    console.log("This software uses Google Maps API (Geocoding). Please, generate a proper key on Google Cloud console e set the environment variable GMAPS_KEY with the key.");
 var googleMapsClient = require('@google/maps').createClient({key: key});
 var Toolkit = function(ffub){
     this.ffub = ffub;

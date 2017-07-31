@@ -1,6 +1,6 @@
 {
   "name": "ffub",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Fitness for Use Backbone (FFUB) for biodiversity data",
   "main": "index.js",
   "scripts": {

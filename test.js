@@ -9,7 +9,6 @@ var ffub = new FFUB();
 // Instance of mechanism that will generates assertions results
 var mechanism = new Toolkit(ffub);
 
-
 // Params to read the Data Resource file 
 var filePath = 'occurrence.txt', limit = 20, delimiter = "\t";
 
